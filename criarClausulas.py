@@ -113,7 +113,7 @@ for linha1 in range(1,entrada+1):
 
 
 #Criacão do arquivo para entrada
-arquivo = open('C:/Users/Lucas/Desktop/clausulas.txt','w')
+arquivo = open('clausulas.txt','w')
 arquivo.write(str(len(teste))+" "+str(entrada)+'\n')
 for i in teste:
     arquivo.writelines((str(i).strip(']').strip('[')+'\n').replace(',',''))

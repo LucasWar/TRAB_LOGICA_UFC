@@ -1,8 +1,8 @@
 import itertools
-import numpy as np 
+import numpy as np
 
 def lerArquivo():                                       #Função para leitura do arquivo .txt e retornar suas clausulas e tambem valores iniciis como numeor de clausulas e quantidade de atomos
-    teste = open('C:/Users/Lucas/Desktop/clausulas.txt')
+    teste = open('clausulas.txt')
     valoresIniciais = teste.readline()                  #ler primiera linha 
     valoresIniciais = valoresIniciais.split()           #Divide a primeira linha no com referencia no espaço criando um array com o numero de clausulas e seus atomos
     
