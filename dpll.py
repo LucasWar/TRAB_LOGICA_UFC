@@ -1,6 +1,6 @@
 import itertools
 import numpy as np
-
+import math 
 def lerArquivo():                                       #Função para leitura do arquivo .txt e retornar suas clausulas e tambem valores iniciis como numeor de clausulas e quantidade de atomos
     teste = open('clausulas.txt')
     valoresIniciais = teste.readline()                  #ler primiera linha 
@@ -24,7 +24,7 @@ def lerArquivo():                                       #Função para leitura d
         stringCLausula = i[0].split()                           #Separa a string em cada espaço 
         intClausula = [int(valor) for valor in stringCLausula]  #Converte em int cada numero dentro de stringClausula
         clausulas.append(list(intClausula))                     #Adiciona a clausula inteira em clausulas
-    return clausulas,int(valoresIniciais[1])
+    return clausulas, math.floor(math.sqrt(int(valoresIniciais[1])))
 
 
 
@@ -101,51 +101,56 @@ def dpll(matriz,valoracao):                                 #Função principal 
     except IndexError:
         literal = novaMatriz[0]
 
-    #Iniciaamente verifica se existe clausulas vazias dentro da matriz se existir retorna falso,indicando que a escolha de litral falhou
+    #Inicialmente verifica se existe clausulas vazias dentro da matriz se existir retorna falso,indicando que a escolha de litral falhou
     if [] in novaMatriz:
         return False
-    else: #Backtraking a matriz e copiada 
-        testeMatriz =copiar_matriz(novaMatriz)
-        testeMatriz.append([literal])
-        if dpll(testeMatriz,novaValoracao) == False:
-            testeMatriz = copiar_matriz(novaMatriz)
-            testeMatriz.append([literal*-1])
+    else: #Backtraking
+        testeMatriz =copiar_matriz(novaMatriz)          #Copio a matriz para caso necessario tenho a matriz original antes de realizar alterações
+        testeMatriz.append([literal])                   #Adiciono o literal ao conjunto de clausulas 
+        if dpll(testeMatriz,novaValoracao) == False:    #Com isso envio para dpll novamente para que ocorar a simplificação e todos esse processo ate que se chegue em um resultado
+            testeMatriz = copiar_matriz(novaMatriz)     #Caso tenha ocorrido do simplifica levar a uma clausula vazia tentaremos com outro literal na matriz que não foi alterada, e mando para testeMatriz
+            testeMatriz.append([literal*-1])            #Agora adiciono o literal * -1 para testa sua outra valoração
 
-            if dpll(testeMatriz,novaValoracao) == False:
+            if dpll(testeMatriz,novaValoracao) == False: #Caso retorne falso não possivel resolver o conjunto de clausulas então será retornado falso
                 return False
             else:                
-                return dpll(testeMatriz,novaValoracao)
+                return dpll(testeMatriz,novaValoracao)   #Caso contrario sera retornado a resposta do simplidica com o literal testado 
         else:
-            return dpll(testeMatriz,novaValoracao)
+            return dpll(testeMatriz,novaValoracao)       #Mesmo caso anterior porem com a primiera valoração o literal 
         
-fnc, atomos= lerArquivo()        
+fnc, atomos= lerArquivo() #Atribuir os valores lidos no arquivo      
 string_to_int = {}
 int_to_string = {}
 
+#Mapeamento da matriz para apresentação do resultado para todas as possiveis posições do tabuleiro, cada posição receve um valor de chave exemplo posição 1:1 tem como chave 1 e assim segue para todas posições do tabuleiro
 chave = 1
 for i, j in itertools.product(range(1,atomos+1), range(1,atomos+1)):
         int_to_string[chave] = f"{i}_{j}"
         chave += 1
 
+#Mapeamento da matriz para apresentação do resultado, funciona como o loop anterior porem trocando as posições pelas chaves
 chave = 1
 for i, j in itertools.product(range(1,atomos+1), range(1,atomos+1)):
     string_to_int[f"{i}_{j}"] = chave
     chave+=1
 
-
- 
-
-
+#Variavel responsavel pela valorações dos atomos 
 valoracao = {}
+
+#Matriz que irá apresentar as posições das rainhas
 matrizResultado = np.zeros((atomos,atomos), dtype=np.int16)
 
-
+#Incia as valorações de todos atomos como indefinido
 for i in range(1,(atomos*atomos)+1):
     valoracao[i] = '*'
+
+#Clausulas, representado pela variavel fnc, e a valoração são enviadas para dpll para sejam resolvidas
 matriz,valoracao = dpll(fnc,valoracao)
+
+#Passa os resultados das valoração para resuktado criando seus atomos e seus respectivos sinais com base na valora~ção recebida
 resultado = [chave if valor == 'True' else -chave for chave, valor in valoracao.items()]
 
-
+#Alterar os valores na matriz resultado de acordo com cada valoração recebida nos atomos 
 for x in resultado:
     if x > 0:
         position = int_to_string[x].split('_')
